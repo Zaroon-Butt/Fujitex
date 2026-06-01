@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-cream text-neutral-900 font-sans antialiased;
+    @apply dark:bg-night-900 dark:text-neutral-100;
+    text-rendering: optimizeLegibility;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  img {
+    @apply max-w-full h-auto;
+  }
+  /* Override autofill background that breaks vibrant inputs */
+  input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+  }
+  .dark input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px #141916 inset !important;
+    -webkit-text-fill-color: #f4f5f3 !important;
+  }
+}
+
+@layer components {
+  .container-px {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-600/30 hover:bg-brand-700 hover:shadow-brand-700/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:opacity-50 transition-all;
+  }
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-br from-gold-400 to-gold-600 px-6 py-3 text-sm font-semibold text-ink shadow-lg shadow-gold-500/30 hover:from-gold-500 hover:to-gold-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2 disabled:opacity-50 transition-all;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-neutral-300 bg-white/80 px-6 py-3 text-sm font-semibold text-neutral-900 hover:bg-white hover:border-neutral-400 active:scale-[0.98] transition-all;
+    @apply dark:border-night-500 dark:bg-night-800/80 dark:text-neutral-100 dark:hover:bg-night-700 dark:hover:border-night-500;
+  }
+  .btn-ghost-light {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 backdrop-blur px-6 py-3 text-sm font-semibold text-white hover:bg-white/20 active:scale-[0.98] transition-all;
+  }
+  .input {
+    @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors;
+    @apply dark:border-night-600 dark:bg-night-800 dark:text-neutral-100 dark:placeholder:text-neutral-500;
+  }
+  .input-label {
+    @apply block text-sm font-medium text-neutral-800 mb-1.5 dark:text-neutral-300;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full bg-gold-100 text-gold-800 px-3 py-1 text-xs font-semibold dark:bg-gold-400/15 dark:text-gold-300;
+  }
+  .chip-brand {
+    @apply inline-flex items-center gap-1 rounded-full bg-brand-100 text-brand-800 px-3 py-1 text-xs font-semibold dark:bg-brand-400/15 dark:text-brand-300;
+  }
+  .chip-rose {
+    @apply inline-flex items-center gap-1 rounded-full bg-rose-100 text-rose-700 px-3 py-1 text-xs font-semibold dark:bg-rose-500/15 dark:text-rose-300;
+  }
+  .card {
+    @apply bg-white rounded-2xl border border-neutral-200 shadow-sm dark:bg-night-800 dark:border-night-600;
+  }
+  .section-title {
+    @apply font-display text-3xl sm:text-4xl text-ink tracking-tight dark:text-neutral-100;
+  }
+  .section-eyebrow {
+    @apply text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-brand-700 dark:text-brand-400;
+  }
+}

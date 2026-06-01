@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Fujitex",
+    "slug": "fujitex-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "fujitex",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#fef9ef",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "co.fujitex.mobile"
+    },
+    "android": {
+      "package": "co.fujitex.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#064e3b",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-image",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#064e3b"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
