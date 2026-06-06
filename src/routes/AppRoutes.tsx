@@ -24,6 +24,8 @@ import { AdminSectionsPage } from '@/pages/admin/AdminSectionsPage';
 import { AdminProductsPage } from '@/pages/admin/AdminProductsPage';
 import { AdminProductFormPage } from '@/pages/admin/AdminProductFormPage';
 import { AdminOrdersPage } from '@/pages/admin/AdminOrdersPage';
+import { AdminOrderDetailPage } from '@/pages/admin/AdminOrderDetailPage';
+import { AdminStitchingSheetPage } from '@/pages/admin/AdminStitchingSheetPage';
 
 export function AppRoutes() {
   return (
@@ -49,6 +51,15 @@ export function AppRoutes() {
 
         {/* admin */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
+        {/* standalone printable docs — staff-gated but outside the admin shell */}
+        <Route
+          path="/admin/orders/:id/stitching"
+          element={
+            <RequireStaff>
+              <AdminStitchingSheetPage />
+            </RequireStaff>
+          }
+        />
         <Route
           path="/admin"
           element={
@@ -63,6 +74,7 @@ export function AppRoutes() {
           <Route path="products/new" element={<AdminProductFormPage />} />
           <Route path="products/:id" element={<AdminProductFormPage />} />
           <Route path="orders" element={<AdminOrdersPage />} />
+          <Route path="orders/:id" element={<AdminOrderDetailPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

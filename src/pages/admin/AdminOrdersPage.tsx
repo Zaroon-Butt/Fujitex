@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { formatPKR } from '@/lib/utils';
+import { statusLabel } from '@/features/admin/orderHelpers';
 import type { OrderStatus, PaymentMethod, PaymentStatus } from '@/types/database';
 
 interface OrderRow {
@@ -18,16 +20,19 @@ interface OrderRow {
 }
 
 const statusColor: Record<OrderStatus, string> = {
-  pending:   'chip',
-  confirmed: 'chip-brand',
-  packed:    'chip-brand',
-  shipped:   'chip-brand',
-  delivered: 'chip-brand',
-  cancelled: 'chip-rose',
-  refunded:  'chip-rose',
+  pending:     'chip',
+  confirmed:   'chip-brand',
+  in_progress: 'chip-brand',
+  completed:   'chip-brand',
+  packed:      'chip-brand',
+  shipped:     'chip-brand',
+  delivered:   'chip-brand',
+  cancelled:   'chip-rose',
+  refunded:    'chip-rose',
 };
 
 export function AdminOrdersPage() {
+  const navigate = useNavigate();
   const [rows, setRows] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -60,7 +65,7 @@ export function AdminOrdersPage() {
   return (
     <div>
       <h1 className="font-display text-2xl text-ink dark:text-neutral-100">Orders</h1>
-      <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Latest 200 orders. Regional and payment-method breakdown.</p>
+      <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">Latest 200 orders. Click a row to open its invoice.</p>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
         <Stat label="Revenue"      value={formatPKR(stats.revenuePaisas)} accent="brand" />
@@ -95,7 +100,11 @@ export function AdminOrdersPage() {
           </thead>
           <tbody>
             {rows.map((o) => (
-              <tr key={o.id} className="border-t border-neutral-100 dark:border-night-700 text-ink dark:text-neutral-100">
+              <tr
+                key={o.id}
+                onClick={() => navigate(`/admin/orders/${o.id}`)}
+                className="border-t border-neutral-100 dark:border-night-700 text-ink dark:text-neutral-100 cursor-pointer hover:bg-neutral-50 dark:hover:bg-night-700/50"
+              >
                 <td className="px-4 py-3 font-mono text-xs">{o.order_number}</td>
                 <td className="px-4 py-3">
                   <p className="font-medium">{o.ship_full_name}</p>
@@ -104,7 +113,7 @@ export function AdminOrdersPage() {
                 <td className="px-4 py-3">{o.ship_city}<p className="text-xs text-neutral-500 dark:text-neutral-400">{o.ship_zone.replace('_', ' ')}</p></td>
                 <td className="px-4 py-3 font-medium">{formatPKR(o.total_paisas)}</td>
                 <td className="px-4 py-3 text-xs"><span className="chip">{o.payment_method.toUpperCase()}</span></td>
-                <td className="px-4 py-3"><span className={statusColor[o.status]}>{o.status}</span></td>
+                <td className="px-4 py-3"><span className={statusColor[o.status]}>{statusLabel(o.status)}</span></td>
                 <td className="px-4 py-3 text-xs text-neutral-600 dark:text-neutral-400">
                   {new Date(o.placed_at).toLocaleDateString('en-PK', { year: 'numeric', month: 'short', day: 'numeric' })}
                 </td>

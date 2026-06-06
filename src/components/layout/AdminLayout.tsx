@@ -15,7 +15,7 @@ export function AdminLayout() {
   const { profile, user } = useAuth();
   return (
     <div className="min-h-screen bg-cream dark:bg-night-900 flex">
-      <aside className="hidden md:flex w-64 flex-col bg-gradient-to-b from-ink via-brand-950 to-emerald-950 text-neutral-100">
+      <aside className="hidden md:flex w-64 flex-col bg-gradient-to-b from-ink via-brand-950 to-emerald-950 text-neutral-100 print:hidden">
         <div className="px-6 py-5 border-b border-white/10 flex items-center gap-3">
           <LogoMark size={36} />
           <div>
@@ -62,7 +62,7 @@ export function AdminLayout() {
         </div>
       </aside>
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white dark:bg-night-800 border-b border-neutral-200 dark:border-night-600 px-6 py-4 md:hidden flex items-center justify-between">
+        <header className="bg-white dark:bg-night-800 border-b border-neutral-200 dark:border-night-600 px-6 py-4 md:hidden flex items-center justify-between print:hidden">
           <span className="inline-flex items-center gap-2">
             <LogoMark size={28} />
             <span className="font-display text-lg text-brand-700">Fujitex Admin</span>

@@ -70,3 +70,20 @@
     @apply text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-brand-700 dark:text-brand-400;
   }
 }
+
+/* Print: clean white documents for invoices and stitching work orders. */
+@media print {
+  .no-print { display: none !important; }
+  html, body {
+    background: #ffffff !important;
+    color: #1c1917 !important;
+  }
+  /* Keep brand swatches/badges accurate on paper. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* If the admin is in dark mode, force the documents to print on white. */
+  .dark [class*="bg-night-"] { background-color: #ffffff !important; }
+  .dark [class*="dark:text-neutral"] { color: #1c1917 !important; }
+}
