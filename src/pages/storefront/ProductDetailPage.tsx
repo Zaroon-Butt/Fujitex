@@ -13,7 +13,15 @@ import {
   Shield,
   Truck,
 } from 'lucide-react';
-import { useProduct, orderedImages, isPurchasable, discountPct, supportsStitching } from '@/features/catalog/useProduct';
+import {
+  useProduct,
+  orderedColors,
+  defaultColor,
+  imagesForColor,
+  isPurchasable,
+  discountPct,
+  supportsStitching,
+} from '@/features/catalog/useProduct';
 import { useCart } from '@/features/cart/useCart';
 import { useStitchingPrice } from '@/features/stitching/useStitchingPrice';
 import { formatPKR } from '@/lib/utils';
@@ -30,8 +38,22 @@ export function ProductDetailPage() {
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
   const [added, setAdded] = useState(false);
+  // null = follow the product's default colour; non-null = an explicit pick.
+  const [pickedColorId, setPickedColorId] = useState<string | null>(null);
 
-  const images = useMemo(() => (product ? orderedImages(product) : []), [product]);
+  const colors = useMemo(() => (product ? orderedColors(product) : []), [product]);
+  const activeColorId = pickedColorId ?? (product ? defaultColor(product)?.id ?? null : null);
+  const selectedColor = colors.find((c) => c.id === activeColorId) ?? null;
+
+  const images = useMemo(
+    () => (product ? imagesForColor(product, activeColorId) : []),
+    [product, activeColorId],
+  );
+
+  function selectColor(id: string) {
+    setPickedColorId(id);
+    setActiveImg(0);
+  }
 
   if (isLoading) {
     return (
@@ -68,7 +90,7 @@ export function ProductDetailPage() {
   const meta = [
     { label: 'Fabric', value: product.fabric_type },
     { label: 'Blend', value: product.fabric_blend },
-    { label: 'Color', value: product.color },
+    { label: 'Color', value: selectedColor?.name ?? product.color },
     { label: 'Occasion', value: product.occasion },
   ].filter((m) => !!m.value);
 
@@ -172,6 +194,34 @@ export function ProductDetailPage() {
               )}
               {!purchasable && <span className="chip-rose">Out of stock</span>}
             </div>
+
+            {/* Colour swatches */}
+            {colors.length > 0 && (
+              <div className="mt-5">
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Color: <span className="font-semibold text-ink dark:text-neutral-100">{selectedColor?.name ?? '—'}</span>
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {colors.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => selectColor(c.id)}
+                      title={c.name}
+                      aria-label={c.name}
+                      aria-pressed={c.id === activeColorId}
+                      className={cn(
+                        'h-9 w-9 rounded-full border transition-shadow',
+                        c.id === activeColorId
+                          ? 'ring-2 ring-brand-600 ring-offset-2 ring-offset-white dark:ring-offset-night-900 border-transparent'
+                          : 'border-neutral-300 dark:border-night-600 hover:border-neutral-400',
+                      )}
+                      style={{ backgroundColor: c.hex ?? '#d4d4d4' }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {!!product.description && (
               <p className="mt-5 text-neutral-700 dark:text-neutral-300 leading-relaxed">

@@ -51,8 +51,21 @@ export interface ProductImage {
   alt_text: string | null;
   sort_order: number;
   is_primary: boolean;
+  /** Optional colour this image belongs to (null = shown for every colour). */
+  color_id: string | null;
   width: number | null;
   height: number | null;
+  created_at: string;
+}
+
+export interface ProductColor {
+  id: string;
+  product_id: string;
+  name: string;
+  /** Swatch colour as #rrggbb, or null when only a name is given. */
+  hex: string | null;
+  sort_order: number;
+  is_default: boolean;
   created_at: string;
 }
 
@@ -85,6 +98,8 @@ export interface ProductCategoryRef {
 
 export interface ProductWithImages extends Product {
   product_images: ProductImage[];
+  /** Colour variants, when embedded (e.g. useProduct). Absent on legacy queries. */
+  product_colors?: ProductColor[];
   /** Present when the query embeds the category/section (e.g. useProduct). */
   categories?: ProductCategoryRef | null;
 }

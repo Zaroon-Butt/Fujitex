@@ -1,36 +1,30 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
-import type { ProductWithImages } from '@/types/database';
+import type { ProductColor, ProductImage, ProductWithImages } from '@/types/database';
 
-// Full select embeds the section's stitching flag; base select is the legacy
-// shape used as a fallback when the stitching migration hasn't been applied yet.
+// Selects degrade gracefully as migrations land:
+//   FULL   — colours + section stitching flag (current schema)
+//   COLORS — colours, no stitching join (stitching migration pending)
+//   LEGACY — images only (colours migration pending)
 const PRODUCT_SELECT_FULL =
-  '*, product_images(*), categories!inner(slug, name, sections!inner(slug, name, supports_stitching))';
-const PRODUCT_SELECT_BASE = '*, product_images(*)';
+  '*, product_images(*), product_colors(*), categories!inner(slug, name, sections!inner(slug, name, supports_stitching))';
+const PRODUCT_SELECT_COLORS = '*, product_images(*), product_colors(*)';
+const PRODUCT_SELECT_LEGACY = '*, product_images(*)';
 
-/** Fetch a single product (with its images) by slug for the detail page. */
+/** Fetch a single product (with its images & colours) by slug for the detail page. */
 export function useProduct(slug?: string) {
   return useQuery({
     queryKey: ['product', slug],
     enabled: !!slug,
     queryFn: async (): Promise<ProductWithImages | null> => {
-      // Prefer the full select. If `sections.supports_stitching` doesn't exist
-      // yet (migration pending), PostgREST 400s — fall back so the storefront
-      // keeps working and stitching simply stays off until the migration lands.
-      let res = await supabase
-        .from('products')
-        .select(PRODUCT_SELECT_FULL)
-        .eq('slug', slug!)
-        .maybeSingle();
-      if (res.error) {
-        res = await supabase
-          .from('products')
-          .select(PRODUCT_SELECT_BASE)
-          .eq('slug', slug!)
-          .maybeSingle();
+      // Prefer the full select, then progressively fall back so the storefront
+      // keeps working even when a migration hasn't been applied yet.
+      for (const select of [PRODUCT_SELECT_FULL, PRODUCT_SELECT_COLORS, PRODUCT_SELECT_LEGACY]) {
+        const res = await supabase.from('products').select(select).eq('slug', slug!).maybeSingle();
+        if (!res.error) return (res.data as unknown as ProductWithImages | null) ?? null;
+        if (select === PRODUCT_SELECT_LEGACY) throw res.error;
       }
-      if (res.error) throw res.error;
-      return (res.data as unknown as ProductWithImages | null) ?? null;
+      return null;
     },
   });
 }
@@ -41,6 +35,36 @@ export function orderedImages(product: Pick<ProductWithImages, 'product_images'>
     if (a.is_primary !== b.is_primary) return a.is_primary ? -1 : 1;
     return a.sort_order - b.sort_order;
   });
+}
+
+/** A product's colours, ordered (sort_order, then name). */
+export function orderedColors(product: Pick<ProductWithImages, 'product_colors'>): ProductColor[] {
+  return [...(product.product_colors ?? [])].sort((a, b) => {
+    if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+/** The colour to pre-select (flagged default, else the first), or null. */
+export function defaultColor(product: Pick<ProductWithImages, 'product_colors'>): ProductColor | null {
+  const colors = orderedColors(product);
+  return colors.find((c) => c.is_default) ?? colors[0] ?? null;
+}
+
+/**
+ * Gallery images for the selected colour: that colour's images first, then the
+ * "general" (unassigned) ones. Falls back to all images when the colour has none
+ * of its own, or when no colour is selected.
+ */
+export function imagesForColor(
+  product: Pick<ProductWithImages, 'product_images'>,
+  colorId: string | null,
+): ProductImage[] {
+  const all = orderedImages(product);
+  if (!colorId) return all;
+  const scoped = all.filter((i) => i.color_id === colorId);
+  if (!scoped.length) return all;
+  return [...scoped, ...all.filter((i) => i.color_id == null)];
 }
 
 /** Whether a product can be added to the cart. */
