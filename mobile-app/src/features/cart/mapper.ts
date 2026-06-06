@@ -3,7 +3,7 @@ import { orderedImages } from '@/features/catalog/useProduct';
 import type { CartItem } from './store';
 
 /** Build a cart line item from a catalog product (snapshot of price/name/image). */
-export function productToCartItem(product: ProductWithImages): Omit<CartItem, 'quantity'> {
+export function productToCartItem(product: ProductWithImages): Omit<CartItem, 'quantity' | 'lineId'> {
   const primary = orderedImages(product)[0];
   return {
     productId: product.id,

@@ -16,6 +16,7 @@ export interface CheckoutInput {
   shipCarrier: string;
   subtotalPaisas: number;
   shippingPaisas: number;
+  stitchingPaisas: number;
   totalPaisas: number;
   paymentMethod: PaymentMethod;
 }
@@ -64,6 +65,7 @@ export async function placeOrder(input: CheckoutInput): Promise<PlacedOrder> {
         ship_carrier: input.shipCarrier,
         subtotal_paisas: input.subtotalPaisas,
         shipping_paisas: input.shippingPaisas,
+        stitching_paisas: input.stitchingPaisas,
         total_paisas: input.totalPaisas,
         payment_method: input.paymentMethod,
       },
@@ -75,6 +77,11 @@ export async function placeOrder(input: CheckoutInput): Promise<PlacedOrder> {
         unit_price_paisas: i.pricePaisas,
         quantity: i.quantity,
         line_total_paisas: i.pricePaisas * i.quantity,
+        with_stitching: !!i.stitching,
+        stitching_paisas: i.stitching ? i.stitching.feePaisas * i.quantity : 0,
+        garment_type: i.stitching?.garmentType ?? null,
+        measurement_unit: i.stitching?.unit ?? null,
+        measurements: i.stitching?.values ?? null,
       })),
     });
     if (!error && data?.order_number) {

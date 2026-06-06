@@ -23,7 +23,8 @@ import { PressableScale } from '@/components/ui/PressableScale';
 import { ThemedText } from '@/components/ui/ThemedText';
 import { useCartActions, useIsInCart } from '@/features/cart/store';
 import { isPurchasable, productToCartItem } from '@/features/cart/mapper';
-import { orderedImages, useProduct } from '@/features/catalog/useProduct';
+import { orderedImages, supportsStitching, useProduct } from '@/features/catalog/useProduct';
+import { useStitchingPrice } from '@/features/stitching/useStitchingPrice';
 import { discountPct, formatPKR } from '@/lib/format';
 import { ms, radius, shadows, spacing, useColors, useThemedStyles, type ThemeColors } from '@/theme';
 
@@ -38,6 +39,7 @@ export default function ProductScreen() {
   const { data: product, isLoading, error } = useProduct(slug);
   const { add } = useCartActions();
   const inCart = useIsInCart(product?.id ?? '');
+  const { pricePaisas: stitchingPaisas } = useStitchingPrice();
 
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
@@ -200,6 +202,28 @@ export default function ProductScreen() {
             </View>
           )}
 
+          {/* Custom stitching offer — men's products only */}
+          {purchasable && supportsStitching(product) && (
+            <PressableScale
+              onPress={() => router.push(`/stitching/${product.slug}`)}
+              activeScale={0.98}
+              style={styles.stitchCard}
+            >
+              <View style={styles.stitchIcon}>
+                <Icon name="scissors" size={18} color={colors.ink} />
+              </View>
+              <View style={styles.stitchBody}>
+                <ThemedText variant="label" weight="semibold">
+                  Get it stitched to your size
+                </ThemedText>
+                <ThemedText variant="caption" muted>
+                  Custom Shalwar Kameez · +{formatPKR(stitchingPaisas)}
+                </ThemedText>
+              </View>
+              <Icon name="chevron-right" size={20} color={colors.primaryDark} />
+            </PressableScale>
+          )}
+
           {/* Trust row */}
           <View style={styles.trustRow}>
             {[
@@ -310,6 +334,26 @@ const makeStyles = (colors: ThemeColors) =>
     justifyContent: 'space-between',
     marginTop: spacing.lg,
   },
+  stitchCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginTop: spacing.lg,
+    padding: spacing.base,
+    borderRadius: radius.xl,
+    borderWidth: 1.5,
+    borderColor: colors.gold[300],
+    backgroundColor: colors.gold[50],
+  },
+  stitchIcon: {
+    width: ms(40),
+    height: ms(40),
+    borderRadius: radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.gold[400],
+  },
+  stitchBody: { flex: 1, gap: 2 },
   trustRow: {
     flexDirection: 'row',
     gap: spacing.sm,

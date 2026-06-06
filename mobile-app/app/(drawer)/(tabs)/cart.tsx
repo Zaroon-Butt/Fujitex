@@ -13,13 +13,28 @@ import {
   useCartActions,
   useCartHydrated,
   useCartItems,
+  useCartStitchingTotal,
   useCartSubtotal,
   type CartItem,
 } from '@/features/cart/store';
+import { kameezMeasurements, shalwarMeasurements } from '@/features/stitching/measurements';
 import { formatPKR } from '@/lib/format';
 import { font, ms, radius, shadows, spacing, useColors, useThemedStyles, type ThemeColors } from '@/theme';
 
 const BLUR = 'L6Pj0^jE.AyE_3t7t7R**0o#DgR4';
+
+/** Short, human summary of a stitched line's measurements (first few fields). */
+function stitchingSummary(item: CartItem): string {
+  if (!item.stitching) return '';
+  const parts = [...kameezMeasurements, ...shalwarMeasurements]
+    .map((f) => {
+      const v = item.stitching!.values[f.key as keyof typeof item.stitching.values];
+      return v === undefined ? null : `${f.label.split(' ')[0]} ${v}`;
+    })
+    .filter(Boolean)
+    .slice(0, 3);
+  return `${parts.join(' · ')} (${item.stitching.unit})`;
+}
 
 function CartLine({ item }: { item: CartItem }) {
   const colors = useColors();
@@ -46,22 +61,36 @@ function CartLine({ item }: { item: CartItem }) {
           {formatPKR(item.pricePaisas)}
         </ThemedText>
 
+        {item.stitching && (
+          <View style={styles.stitchBadge}>
+            <Icon name="scissors" size={12} color={colors.primaryDark} />
+            <ThemedText variant="caption" color={colors.primaryDark} weight="semibold">
+              Stitched · +{formatPKR(item.stitching.feePaisas)}
+            </ThemedText>
+          </View>
+        )}
+        {item.stitching && (
+          <ThemedText variant="caption" muted numberOfLines={1}>
+            {stitchingSummary(item)}
+          </ThemedText>
+        )}
+
         <View style={styles.lineControls}>
           <QuantityStepper
             value={item.quantity}
-            onChange={(n) => setQty(item.productId, n)}
+            onChange={(n) => setQty(item.lineId, n)}
             min={1}
             max={item.maxStock}
             size="sm"
           />
-          <PressableScale onPress={() => remove(item.productId)} style={styles.remove} activeScale={0.9}>
+          <PressableScale onPress={() => remove(item.lineId)} style={styles.remove} activeScale={0.9}>
             <Icon name="trash-2" size={16} color={colors.neutral[500]} />
           </PressableScale>
         </View>
       </View>
 
       <ThemedText variant="label" weight="bold" style={styles.lineTotal}>
-        {formatPKR(item.pricePaisas * item.quantity)}
+        {formatPKR((item.pricePaisas + (item.stitching?.feePaisas ?? 0)) * item.quantity)}
       </ThemedText>
     </Animated.View>
   );
@@ -73,6 +102,7 @@ export default function CartScreen() {
   const insets = useSafeAreaInsets();
   const items = useCartItems();
   const subtotal = useCartSubtotal();
+  const stitching = useCartStitchingTotal();
   const hydrated = useCartHydrated();
   const { clear } = useCartActions();
 
@@ -109,7 +139,7 @@ export default function CartScreen() {
             showsVerticalScrollIndicator={false}
           >
             {items.map((item) => (
-              <CartLine key={item.productId} item={item} />
+              <CartLine key={item.lineId} item={item} />
             ))}
           </ScrollView>
 
@@ -121,7 +151,21 @@ export default function CartScreen() {
               <ThemedText variant="body" muted>
                 Subtotal
               </ThemedText>
-              <ThemedText variant="title">{formatPKR(subtotal)}</ThemedText>
+              <ThemedText variant="label" weight="semibold">{formatPKR(subtotal)}</ThemedText>
+            </View>
+            {stitching > 0 && (
+              <View style={[styles.summaryRow, styles.summaryRowGap]}>
+                <ThemedText variant="body" muted>
+                  Stitching
+                </ThemedText>
+                <ThemedText variant="label" weight="semibold">{formatPKR(stitching)}</ThemedText>
+              </View>
+            )}
+            <View style={[styles.summaryRow, styles.summaryRowGap]}>
+              <ThemedText variant="title">Total</ThemedText>
+              <ThemedText variant="title" color={colors.primaryDark}>
+                {formatPKR(subtotal + stitching)}
+              </ThemedText>
             </View>
             <ThemedText variant="caption" muted style={styles.shipNote}>
               Shipping calculated at checkout.
@@ -167,6 +211,17 @@ const makeStyles = (colors: ThemeColors) =>
   thumb: { width: ms(76), height: ms(100), borderRadius: radius.md, backgroundColor: colors.surfaceMuted },
   lineBody: { flex: 1, gap: 2 },
   linePrice: { fontSize: font(14), marginTop: 2 },
+  stitchBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    alignSelf: 'flex-start',
+    backgroundColor: colors.brand[50],
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    marginTop: 2,
+  },
   lineControls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -194,6 +249,7 @@ const makeStyles = (colors: ThemeColors) =>
   },
   summaryPad: { paddingBottom: spacing.base },
   summaryRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  summaryRowGap: { marginTop: spacing.xs },
   shipNote: { marginTop: 2 },
   checkoutBtn: { marginTop: spacing.base },
 });

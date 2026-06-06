@@ -17,7 +17,7 @@ import { PressableScale } from '@/components/ui/PressableScale';
 import { TextField } from '@/components/ui/TextField';
 import { ThemedText } from '@/components/ui/ThemedText';
 import { useProfile, useUser } from '@/features/auth/store';
-import { useCartActions, useCartItems, useCartSubtotal } from '@/features/cart/store';
+import { useCartActions, useCartItems, useCartStitchingTotal, useCartSubtotal } from '@/features/cart/store';
 import { placeOrder } from '@/features/checkout/placeOrder';
 import { paymentOrder, paymentProviders } from '@/features/payments/providers';
 import { ZONE_LABELS, useShippingRates, zoneForCity } from '@/features/shipping/useShippingRates';
@@ -31,6 +31,7 @@ export default function CheckoutScreen() {
   const insets = useSafeAreaInsets();
   const items = useCartItems();
   const subtotal = useCartSubtotal();
+  const stitching = useCartStitchingTotal();
   const { clear } = useCartActions();
   const user = useUser();
   const profile = useProfile();
@@ -55,7 +56,7 @@ export default function CheckoutScreen() {
     [zoneRates, carrierId],
   );
   const shippingPaisas = selectedRate?.base_paisas ?? 0;
-  const total = subtotal + shippingPaisas;
+  const total = subtotal + stitching + shippingPaisas;
 
   if (items.length === 0) {
     return (
@@ -105,6 +106,7 @@ export default function CheckoutScreen() {
         shipCarrier: selectedRate.carrier,
         subtotalPaisas: subtotal,
         shippingPaisas,
+        stitchingPaisas: stitching,
         totalPaisas: total,
         paymentMethod: method,
       });
@@ -278,6 +280,7 @@ export default function CheckoutScreen() {
           {/* Summary */}
           <View style={styles.summaryCard}>
             <SummaryRow label="Subtotal" value={formatPKR(subtotal)} />
+            {stitching > 0 && <SummaryRow label="Custom stitching" value={formatPKR(stitching)} />}
             <SummaryRow label={`Shipping${selectedRate ? ` · ${selectedRate.carrier}` : ''}`} value={formatPKR(shippingPaisas)} />
             <View style={styles.summaryDivider} />
             <SummaryRow label="Total" value={formatPKR(total)} emphasize />
