@@ -10,7 +10,9 @@ export function useProduct(slug?: string) {
     queryFn: async (): Promise<ProductWithImages | null> => {
       const { data, error } = await supabase
         .from('products')
-        .select('*, product_images(*)')
+        .select(
+          '*, product_images(*), categories!inner(slug, name, sections!inner(slug, name, supports_stitching))',
+        )
         .eq('slug', slug!)
         .maybeSingle();
 
@@ -31,6 +33,14 @@ export function orderedImages(product: Pick<ProductWithImages, 'product_images'>
 /** Whether a product can be added to the cart. */
 export function isPurchasable(p: Pick<ProductWithImages, 'status' | 'stock_units'>): boolean {
   return p.status !== 'out_of_stock' && p.status !== 'archived' && p.stock_units > 0;
+}
+
+/**
+ * Whether custom stitching can be offered for this product. Data-driven: the
+ * product's section must have `supports_stitching` enabled (men's only today).
+ */
+export function supportsStitching(p: Pick<ProductWithImages, 'categories'>): boolean {
+  return p.categories?.sections?.supports_stitching === true;
 }
 
 /** Percent discount (rounded) when a compare-at price is set, else null. */

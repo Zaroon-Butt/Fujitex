@@ -25,6 +25,7 @@ export interface Section {
   hero_image_url: string | null;
   sort_order: number;
   is_active: boolean;
+  supports_stitching: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -75,8 +76,17 @@ export interface Product {
   updated_at: string;
 }
 
+/** The category + section a product belongs to (embedded via PostgREST join). */
+export interface ProductCategoryRef {
+  slug: string;
+  name: string;
+  sections: { slug: string; name: string; supports_stitching: boolean } | null;
+}
+
 export interface ProductWithImages extends Product {
   product_images: ProductImage[];
+  /** Present when the query embeds the category/section (e.g. useProduct). */
+  categories?: ProductCategoryRef | null;
 }
 
 export interface SectionWithCategories extends Section {

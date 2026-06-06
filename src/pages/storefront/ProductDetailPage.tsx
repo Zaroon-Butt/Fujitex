@@ -8,12 +8,14 @@ import {
   Minus,
   Plus,
   RefreshCcw,
+  Scissors,
   ShoppingBag,
   Shield,
   Truck,
 } from 'lucide-react';
-import { useProduct, orderedImages, isPurchasable, discountPct } from '@/features/catalog/useProduct';
+import { useProduct, orderedImages, isPurchasable, discountPct, supportsStitching } from '@/features/catalog/useProduct';
 import { useCart } from '@/features/cart/useCart';
+import { useStitchingPrice } from '@/features/stitching/useStitchingPrice';
 import { formatPKR } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +25,7 @@ export function ProductDetailPage() {
   const { data: product, isLoading, error } = useProduct(slug);
   const add = useCart((s) => s.add);
   const inCart = useCart((s) => s.items.some((i) => i.slug === slug));
+  const { pricePaisas: stitchingPaisas } = useStitchingPrice();
 
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
@@ -232,6 +235,27 @@ export function ProductDetailPage() {
                 <Link to="/cart" className="btn-ghost justify-center">View cart</Link>
               )}
             </div>
+
+            {/* Custom stitching offer — men's products only */}
+            {purchasable && supportsStitching(product) && (
+              <Link
+                to={`/stitch/${product.slug}`}
+                className="mt-4 flex items-center gap-3 rounded-2xl border border-gold-300 bg-gold-50 dark:border-gold-400/30 dark:bg-gold-400/10 p-4 transition-colors hover:border-gold-400"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold-500 text-ink">
+                  <Scissors className="h-5 w-5" />
+                </span>
+                <span className="flex-1">
+                  <span className="block text-sm font-semibold text-ink dark:text-neutral-100">
+                    Get it stitched to your size
+                  </span>
+                  <span className="block text-xs text-neutral-600 dark:text-neutral-300">
+                    Custom Shalwar Kameez tailoring · +{formatPKR(stitchingPaisas)}
+                  </span>
+                </span>
+                <ChevronRight className="h-5 w-5 text-gold-700 dark:text-gold-300" />
+              </Link>
+            )}
 
             {/* Trust row */}
             <div className="mt-8 grid grid-cols-3 gap-3">

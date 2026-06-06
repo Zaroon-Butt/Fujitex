@@ -18,6 +18,7 @@ export function CheckoutPage() {
   const { user, profile } = useAuth();
   const items = useCart((s) => s.items);
   const subtotal = useCart((s) => s.subtotalPaisas());
+  const stitching = useCart((s) => s.stitchingTotalPaisas());
   const clear = useCart((s) => s.clear);
   const { data: rates = [] } = useShippingRates();
 
@@ -40,7 +41,7 @@ export function CheckoutPage() {
     [zoneRates, carrierId],
   );
   const shippingPaisas = selectedRate?.base_paisas ?? 0;
-  const total = subtotal + shippingPaisas;
+  const total = subtotal + stitching + shippingPaisas;
 
   if (items.length === 0) {
     return (
@@ -86,6 +87,7 @@ export function CheckoutPage() {
         shipCarrier: selectedRate.carrier,
         subtotalPaisas: subtotal,
         shippingPaisas,
+        stitchingPaisas: stitching,
         totalPaisas: total,
         paymentMethod: method,
       });
@@ -218,14 +220,20 @@ export function CheckoutPage() {
             <h2 className="font-display text-lg text-ink dark:text-neutral-100">Order summary</h2>
             <ul className="mt-3 space-y-2 max-h-56 overflow-auto">
               {items.map((i) => (
-                <li key={i.productId} className="flex justify-between gap-3 text-sm">
-                  <span className="text-neutral-700 dark:text-neutral-300 truncate">{i.name} × {i.quantity}</span>
-                  <span className="font-medium text-ink dark:text-neutral-100 shrink-0">{formatPKR(i.pricePaisas * i.quantity)}</span>
+                <li key={i.lineId} className="flex justify-between gap-3 text-sm">
+                  <span className="text-neutral-700 dark:text-neutral-300 truncate">
+                    {i.name} × {i.quantity}
+                    {i.stitching && <span className="ml-1 text-gold-700 dark:text-gold-400">· stitched</span>}
+                  </span>
+                  <span className="font-medium text-ink dark:text-neutral-100 shrink-0">
+                    {formatPKR((i.pricePaisas + (i.stitching?.feePaisas ?? 0)) * i.quantity)}
+                  </span>
                 </li>
               ))}
             </ul>
             <div className="mt-4 border-t border-neutral-200 dark:border-night-600 pt-4 space-y-2 text-sm">
               <Row label="Subtotal" value={formatPKR(subtotal)} />
+              {stitching > 0 && <Row label="Custom stitching" value={formatPKR(stitching)} />}
               <Row label={`Shipping${selectedRate ? ` · ${selectedRate.carrier}` : ''}`} value={formatPKR(shippingPaisas)} />
               <div className="flex justify-between pt-2 border-t border-neutral-200 dark:border-night-600">
                 <span className="font-semibold text-ink dark:text-neutral-100">Total</span>

@@ -6,6 +6,7 @@ import { RequireStaff } from '@/features/admin/RequireStaff';
 import { HomePage } from '@/pages/storefront/HomePage';
 import { SectionPage } from '@/pages/storefront/SectionPage';
 import { ProductDetailPage } from '@/pages/storefront/ProductDetailPage';
+import { StitchingPage } from '@/pages/storefront/StitchingPage';
 import { CartPage } from '@/pages/storefront/CartPage';
 import { CheckoutPage } from '@/pages/storefront/CheckoutPage';
 import { OrderConfirmationPage } from '@/pages/storefront/OrderConfirmationPage';
@@ -34,6 +35,7 @@ export function AppRoutes() {
           <Route path="/s/:sectionSlug" element={<SectionPage />} />
           <Route path="/s/:sectionSlug/:categorySlug" element={<SectionPage />} />
           <Route path="/p/:slug" element={<ProductDetailPage />} />
+          <Route path="/stitch/:slug" element={<StitchingPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/order-confirmation" element={<OrderConfirmationPage />} />
