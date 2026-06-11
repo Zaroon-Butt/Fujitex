@@ -185,6 +185,9 @@ const makeStyles = (colors: ThemeColors) =>
     position: 'absolute',
     right: spacing.sm,
     bottom: spacing.sm,
+    // Round the wrapper so the brand boxShadow renders as a circular glow that
+    // matches the button — without this it casts a square halo behind it.
+    borderRadius: radius.full,
     ...shadows.brand,
   },
   addBtn: {

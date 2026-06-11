@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,6 +24,7 @@ export default function SignUpScreen() {
   const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
   const { signUp } = useAuthActions();
+  const scrollRef = useRef<ScrollView>(null);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -49,13 +50,16 @@ export default function SignUpScreen() {
 
   return (
     <View style={styles.root}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? undefined : 'height'}>
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={[
             styles.scroll,
-            { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing.xl },
+            { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing['4xl'] },
           ]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
+          automaticallyAdjustKeyboardInsets
           showsVerticalScrollIndicator={false}
         >
           {/* Top bar */}
@@ -154,6 +158,10 @@ export default function SignUpScreen() {
                   secureTextEntry
                   autoComplete="password-new"
                   icon="lock"
+                  onFocus={() => {
+                    // Lift the password field (and submit button below it) clear of the keyboard.
+                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
+                  }}
                 />
 
                 {!!error && (

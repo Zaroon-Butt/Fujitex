@@ -30,6 +30,12 @@ interface AuthState {
   ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  /** Persist editable profile fields for the signed-in user, then update state. */
+  updateProfile: (changes: {
+    full_name?: string | null;
+    phone?: string | null;
+    avatar_url?: string | null;
+  }) => Promise<{ error: string | null }>;
 }
 
 async function fetchProfile(userId: string): Promise<Profile | null> {
@@ -109,6 +115,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!user) return;
     set({ profile: await fetchProfile(user.id) });
   },
+
+  updateProfile: async (changes) => {
+    const { user, profile } = get();
+    if (!user) return { error: 'You are not signed in.' };
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(changes)
+      .eq('id', user.id)
+      .select('*')
+      .single();
+    if (error) return { error: error.message };
+
+    // Mirror the display name onto auth metadata so it survives a profile refetch.
+    if (changes.full_name !== undefined) {
+      await supabase.auth.updateUser({ data: { full_name: changes.full_name } });
+    }
+
+    set({ profile: (data as Profile) ?? profile });
+    return { error: null };
+  },
 }));
 
 /* ----------------------------- selector hooks ----------------------------- */
@@ -128,5 +155,6 @@ export const useAuthActions = () =>
       resetPassword: s.resetPassword,
       signOut: s.signOut,
       refreshProfile: s.refreshProfile,
+      updateProfile: s.updateProfile,
     })),
   );

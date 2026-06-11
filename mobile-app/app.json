@@ -37,6 +37,12 @@
           "resizeMode": "contain",
           "backgroundColor": "#064e3b"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Fujitex needs access to your photos so you can set a profile picture."
+        }
       ]
     ],
     "experiments": {

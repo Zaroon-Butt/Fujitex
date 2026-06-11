@@ -1,7 +1,9 @@
-import { NavLink, Outlet, Link } from 'react-router-dom';
+import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Package, FolderTree, ScrollText, Store, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { signOut, useAuth } from '@/features/auth/useAuth';
+import { useIdleTimeout } from '@/features/auth/useIdleTimeout';
+import { IdleWarningDialog } from '@/features/auth/IdleWarningDialog';
 import { LogoMark } from '@/components/ui/Logo';
 
 const links = [
@@ -11,8 +13,25 @@ const links = [
   { to: '/admin/orders', label: 'Orders', icon: ScrollText },
 ];
 
+// Staff sessions auto sign-out after inactivity; customers stay logged in.
+const IDLE_LIMIT_MS = 30 * 60_000; // sign out after 30 min idle
+const IDLE_WARN_MS = 2 * 60_000; // warn for the final 2 min
+
 export function AdminLayout() {
   const { profile, user } = useAuth();
+  const navigate = useNavigate();
+
+  const endSession = async () => {
+    await signOut();
+    navigate('/admin/login', { replace: true });
+  };
+
+  const { warning, remainingMs, stayActive } = useIdleTimeout({
+    idleMs: IDLE_LIMIT_MS,
+    warnMs: IDLE_WARN_MS,
+    onTimeout: endSession,
+  });
+
   return (
     <div className="min-h-screen bg-cream dark:bg-night-900 flex">
       <aside className="hidden md:flex w-64 flex-col bg-gradient-to-b from-ink via-brand-950 to-emerald-950 text-neutral-100 print:hidden">
@@ -73,6 +92,12 @@ export function AdminLayout() {
           <Outlet />
         </main>
       </div>
+      <IdleWarningDialog
+        open={warning}
+        remainingMs={remainingMs}
+        onStay={stayActive}
+        onSignOut={endSession}
+      />
     </div>
   );
 }

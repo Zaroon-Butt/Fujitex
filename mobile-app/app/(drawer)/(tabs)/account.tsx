@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Linking, ScrollView, StyleSheet, Switch, View } from 'react-native';
@@ -140,6 +141,7 @@ export default function AccountScreen() {
   /* ============================ LOGGED IN ============================ */
   const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Welcome';
   const accountItems: MenuItem[] = [
+    { icon: 'edit-2', label: 'Edit profile', sub: 'Name, phone & photo', onPress: () => router.push('/edit-profile') },
     { icon: 'shopping-bag', label: 'My cart', onPress: () => router.push('/cart') },
     { icon: 'grid', label: 'Shop catalog', onPress: () => router.push('/shop') },
     ...supportItems,
@@ -157,11 +159,15 @@ export default function AccountScreen() {
         <LinearGradient colors={gradients.hero} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.profileCard}>
           <View style={styles.glowGold} />
           <View style={styles.profileRow}>
-            <View style={styles.avatar}>
-              <ThemedText variant="h2" color={colors.white}>
-                {displayName.slice(0, 1).toUpperCase()}
-              </ThemedText>
-            </View>
+            <PressableScale activeScale={0.95} onPress={() => router.push('/edit-profile')} style={styles.avatar}>
+              {profile?.avatar_url ? (
+                <Image source={profile.avatar_url} style={styles.avatarImg} contentFit="cover" transition={150} />
+              ) : (
+                <ThemedText variant="h2" color={colors.white}>
+                  {displayName.slice(0, 1).toUpperCase()}
+                </ThemedText>
+              )}
+            </PressableScale>
             <View style={styles.flex}>
               <ThemedText variant="overline" color={colors.gold[300]}>
                 My account
@@ -440,7 +446,9 @@ const makeStyles = (colors: ThemeColors) =>
     borderColor: 'rgba(255,255,255,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
+  avatarImg: { width: '100%', height: '100%' },
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',

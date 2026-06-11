@@ -71,6 +71,7 @@ export default function RootLayout() {
             <Stack.Screen name="search" options={{ animation: 'fade' }} />
             <Stack.Screen name="checkout" options={{ animation: 'slide_from_bottom' }} />
             <Stack.Screen name="order-confirmation" options={{ animation: 'fade', gestureEnabled: false }} />
+            <Stack.Screen name="edit-profile" options={{ animation: 'slide_from_bottom' }} />
             <Stack.Screen name="sign-in" options={{ presentation: 'modal' }} />
             <Stack.Screen name="sign-up" options={{ presentation: 'modal' }} />
             <Stack.Screen name="forgot-password" options={{ presentation: 'modal' }} />
